@@ -1,0 +1,1 @@
+# Bazy-Danych-Serwi_sprzetu_komputerowego
