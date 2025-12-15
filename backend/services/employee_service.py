@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from models.employee_data import EmployeeData
-from models.user import User
+from backend.models.employee_data import EmployeeData
+from backend.models.user import User
 
 
 class EmployeeService:

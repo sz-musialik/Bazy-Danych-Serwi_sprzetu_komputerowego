@@ -26,10 +26,9 @@ class AuthService:
         haslo: str,
         email: str | None = None,
         nr_telefonu: str | None = None,
-        rola_id: int = 3,  # domyslnie pracownik
+        rola_id: int = 3,
     ) -> User:
 
-        # walidacje podstawowe
         if not login or not haslo:
             raise ValueError("login i haslo sa wymagane")
 

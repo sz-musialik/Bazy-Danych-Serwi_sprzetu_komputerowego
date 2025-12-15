@@ -3,7 +3,7 @@ from backend.database import Base
 
 
 class Role(Base):
-    __tablename__ = "role"  # dokładnie taka nazwa jak w MySQL
+    __tablename__ = "role"
 
     id_rola = Column(Integer, primary_key=True, autoincrement=True)
     nazwa_rola = Column(String(100), unique=True, nullable=False)

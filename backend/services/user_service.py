@@ -13,11 +13,10 @@ class UserService:
                 raise ValueError("uzytkownik istnieje")
             user = User(login=username, haslo_hash=hashed)
             session.add(user)
-            session.flush()  # żeby uzyskać id
+            session.flush()
             return user.id_uzytkownika
 
     def set_archived(self, actor_user, user_id: int, archived: bool):
-        # tylko admin może archiwizować
         if not getattr(actor_user, 'is_admin', False):
             raise PermissionError("Brak uprawnień")
         with transactional_session() as session:
@@ -35,6 +34,5 @@ class UserService:
             role = session.query(Role).filter_by(nazwa_rola=role_name).first()
             if not user or not role:
                 raise ValueError("Nie znaleziono")
-            # update role id
             user.rola_uzytkownika = role.id_rola
             session.add(user)

@@ -17,7 +17,6 @@ class User(Base):
     czy_aktywny = Column(Boolean, default=True)
 
     role = relationship("Role")
-    # relacja do danych kadrowych (1:1)
     dane_kadrowe = relationship("EmployeeData", back_populates="uzytkownik", uselist=False)
 
     def __repr__(self):

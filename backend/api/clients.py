@@ -5,49 +5,26 @@ from backend.models.client import Client
 
 clients_bp = Blueprint("clients", __name__)
 
+
 @clients_bp.route("/clients", methods=["POST"])
 def create_client():
-    data = request.json or {}
+    payload = request.json or {}
 
-    client_id = ClientService.create_client(
-        nazwa=data.get("nazwa"),
-        adres=data.get("adres"),
-        email=data.get("email"),
-        telefon=data.get("telefon"),
-    )
+    try:
+        client_id = ClientService.create_client(
+            imie=payload.get("imie"),
+            nazwisko=payload.get("nazwisko"),
+            email=payload.get("email"),
+            nr_telefonu=payload.get("nr_telefonu"),
+            adres=payload.get("adres"),
+        )
+        return jsonify({"id_klienta": client_id}), 201
 
-    return jsonify({"id_klienta": client_id}), 201
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
 
 @clients_bp.route("/clients", methods=["GET"])
 def get_clients():
-    with transactional_session() as session:
-        clients = session.query(Client)\
-            .filter(Client.czy_aktywny == True)\
-            .all()
+    return jsonify(ClientService.get_all_clients())
 
-        return jsonify([
-            {
-                "id_klienta": c.id_klienta,
-                "imie": c.imie,
-                "email": c.email
-            }
-            for c in clients
-        ])
-
-
-@clients_bp.route("/clients/<int:client_id>", methods=["DELETE"])
-def soft_delete_client(client_id):
-    with transactional_session() as session:
-        client = session.get(Client, client_id)
-
-        if not client:
-            return jsonify({"error": "Client not found"}), 404
-
-        client.czy_aktywny = False
-        session.add(client)
-
-        return jsonify({
-            "message": "Client deactivated",
-            "id_klienta": client.id_klienta
-        })
