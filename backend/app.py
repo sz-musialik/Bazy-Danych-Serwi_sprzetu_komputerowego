@@ -24,34 +24,6 @@ app.register_blueprint(parts_orders_bp)
 def health():
     return jsonify({'status': 'ok'})
 
-
-@app.route('/clients', methods=['POST'])
-def create_client():
-    payload = request.json or {}
-
-    try:
-        from backend.services.client_service import ClientService
-
-        client_id = ClientService.create_client(
-            nazwa=payload.get('nazwa'),
-            adres=payload.get('adres'),
-            email=payload.get('email'),
-            telefon=payload.get('telefon'),
-        )
-
-        return jsonify({'id_klienta': client_id}), 201
-
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 400
-
-    except Exception as e:
-        tb = traceback.format_exc()
-        return jsonify({
-            'error': 'failed to create client',
-            'details': str(e),
-            'trace': tb
-        }), 500
-
 if __name__ == '__main__':
     disable_db = os.getenv('DISABLE_DB', '0') in ('1', 'true', 'True')
     if not disable_db:
