@@ -3,8 +3,8 @@
 ## Instrukcja uruchomienia i testów lokalnych.
 
 ### Wymagania:
-- Python 3.11 wraz z bibliotekami zdefiniowanymi w pliku requirements.txt
-- MySQL
+- Python 3.11 wraz z bibliotekami zdefiniowanymi w pliku `requirements.txt`,
+- MySQL.
 
 ### Instalacja:
 
@@ -21,8 +21,8 @@ Należy zaktualizować `backend/database.py` aby wskazywał na bazę MySQL (DATA
 
 1. Uruchomienie środowiska wirutalnego (venv).
 2. Uruchomienie serwera MySQL.
-3. Wywołanie pliku debug_tables.py.
-4. Wywołanie pliku app.py.
+3. Wywołanie pliku `debug_tables.py`.
+4. Wywołanie pliku `app.py`.
 
 ### Testy:
 W celu uruchomienia podstawowych testów należy wywołać:
