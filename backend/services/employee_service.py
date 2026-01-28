@@ -39,12 +39,14 @@ class EmployeeService:
 
         try:
             db.add(employee_data)
-            db.commit()
+            # Flush zamiast commit, aby nie zamykac transakcji zarzadzanej przez transactional_session
+            db.flush()
             db.refresh(employee_data)
             return employee_data
 
         except IntegrityError:
-            db.rollback()
+            # Nie robimy rollback() ręcznie, bo transakcja zarzadza context manager.
+            # Rzucamy wyjatek ValueError, ktory zostanie obsluzony wyzej.
             raise ValueError("Podany PESEL już istnieje w bazie.")
 
     @staticmethod
@@ -77,7 +79,8 @@ class EmployeeService:
         if data_zatrudnienia is not None:
             employee.data_zatrudnienia = data_zatrudnienia
 
-        db.commit()
+        # Commit zostanie wykonany przez transactional_session w API
+        db.flush()
         return True
 
     @staticmethod

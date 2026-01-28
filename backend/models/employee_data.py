@@ -15,7 +15,7 @@ class EmployeeData(Base):
     stawka_godzinowa = Column(Numeric(10, 2), nullable=True)
     data_zatrudnienia = Column(Date, nullable=True)
 
-    # relacja do użytkownika
+    # Relacja do uzytkownika
     uzytkownik = relationship("User", back_populates="dane_kadrowe")
 
     def __repr__(self):

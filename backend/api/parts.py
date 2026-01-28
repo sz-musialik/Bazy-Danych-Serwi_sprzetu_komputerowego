@@ -1,74 +1,77 @@
 from flask import Blueprint, request, jsonify
-from backend.services.parts_service import PartsService
+from backend.db.session import transactional_session
+from backend.models.parts import Part
+from backend.auth.security import require_role
 
 parts_bp = Blueprint("parts", __name__)
 
 
-@parts_bp.route("/parts", methods=["POST"])
-def create_part():
-    payload = request.json or {}
-
-    if "nazwa_czesci" not in payload:
-        return jsonify({"error": "nazwa_czesci required"}), 400
-
-    try:
-        part_id = PartsService.add_part(
-            nazwa_czesci=payload["nazwa_czesci"],
-            typ_czesci=payload.get("typ_czesci"),
-            producent=payload.get("producent"),
-            numer_katalogowy=payload.get("numer_katalogowy"),
-            cena_katalogowa=float(payload["cena_katalogowa"])
-            if payload.get("cena_katalogowa") is not None
-            else None,
-            ilosc_dostepna=int(payload.get("ilosc_dostepna", 0)),
-        )
-        return jsonify({"id_czesci": part_id}), 201
-
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
-    except Exception as e:
-        return jsonify({"error": "failed to create part", "details": str(e)}), 500
-
-
+# Pobieranie Listy Czesci
+# Wszyscy moga widziec stan magazynu
 @parts_bp.route("/parts", methods=["GET"])
-def list_parts():
-    return jsonify(PartsService.list_parts())
-
-
-@parts_bp.route("/parts/<int:part_id>", methods=["PUT"])
-def update_part(part_id: int):
-    payload = request.json or {}
-
-    try:
-        PartsService.update_part(
-            part_id,
-            nazwa_czesci=payload.get("nazwa_czesci"),
-            producent=payload.get("producent"),
-            numer_katalogowy=payload.get("numer_katalogowy"),
-            cena_katalogowa=payload.get("cena_katalogowa"),
-            ilosc_dostepna=payload.get("ilosc_dostepna"),
+@require_role("administrator", "manager", "pracownik")
+def get_parts():
+    with transactional_session() as session:
+        parts = session.query(Part).order_by(Part.id_czesci).all()
+        return jsonify(
+            [
+                {
+                    "id_czesci": p.id_czesci,
+                    "nazwa_czesci": p.nazwa_czesci,
+                    "typ_czesci": p.typ_czesci,
+                    "producent": p.producent,
+                    "ilosc_dostepna": p.ilosc_dostepna,
+                    "numer_katalogowy": p.numer_katalogowy,
+                    "cena_katalogowa": (
+                        str(p.cena_katalogowa) if p.cena_katalogowa else "0.00"
+                    ),
+                }
+                for p in parts
+            ]
         )
+
+
+# Dodawanie Czesci
+@parts_bp.route("/parts", methods=["POST"])
+@require_role("administrator")
+def create_part():
+    data = request.json or {}
+    if not data.get("nazwa_czesci") or not data.get("typ_czesci"):
+        return jsonify({"error": "Nazwa i typ części są wymagane"}), 400
+
+    with transactional_session() as session:
+        part = Part(
+            nazwa_czesci=data["nazwa_czesci"],
+            typ_czesci=data["typ_czesci"],
+            producent=data.get("producent", ""),
+            ilosc_dostepna=int(data.get("ilosc_dostepna", 0)),
+            numer_katalogowy=data.get("numer_katalogowy", ""),
+            cena_katalogowa=data.get("cena_katalogowa", 0.00),
+        )
+        session.add(part)
+        session.flush()
+        return jsonify({"id_czesci": part.id_czesci}), 201
+
+
+# Edycja Czesci
+@parts_bp.route("/parts/<int:part_id>", methods=["PUT"])
+@require_role("administrator")
+def update_part(part_id: int):
+    data = request.json or {}
+    with transactional_session() as session:
+        part = session.query(Part).filter(Part.id_czesci == part_id).first()
+        if not part:
+            return jsonify({"error": "Part not found"}), 404
+
+        part.nazwa_czesci = data.get("nazwa_czesci", part.nazwa_czesci)
+        part.typ_czesci = data.get("typ_czesci", part.typ_czesci)
+        part.producent = data.get("producent", part.producent)
+        part.numer_katalogowy = data.get("numer_katalogowy", part.numer_katalogowy)
+
+        if "ilosc_dostepna" in data:
+            part.ilosc_dostepna = int(data["ilosc_dostepna"])
+
+        if "cena_katalogowa" in data:
+            part.cena_katalogowa = data["cena_katalogowa"]
+
         return "", 204
-
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
-    except Exception as e:
-        return jsonify({"error": "failed to update part", "details": str(e)}), 500
-
-
-@parts_bp.route("/parts/<int:part_id>/stock", methods=["POST"])
-def change_stock(part_id: int):
-    payload = request.json or {}
-    delta = payload.get("ilosc_zmiana")
-
-    if delta is None:
-        return jsonify({"error": "ilosc_zmiana required"}), 400
-
-    try:
-        PartsService.update_stock(part_id, int(delta))
-        return "", 204
-
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
-    except Exception as e:
-        return jsonify({"error": "failed to update stock", "details": str(e)}), 500

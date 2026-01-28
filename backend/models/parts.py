@@ -1,17 +1,20 @@
-from sqlalchemy import Column, Integer, String, Numeric
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
 from backend.database import Base
+from sqlalchemy.orm import relationship
 
 
 class Part(Base):
     __tablename__ = "czesci"
 
-    id_czesci = Column(Integer, primary_key=True, autoincrement=True)
-    nazwa_czesci = Column(String(255), nullable=False)
-    typ_czesci = Column(Integer, nullable=True)
-    producent = Column(String(255), nullable=True)
-    numer_katalogowy = Column(String(50), nullable=True)
-    cena_katalogowa = Column(Numeric(10, 2), nullable=True)
+    id_czesci = Column(Integer, primary_key=True, index=True)
+    nazwa_czesci = Column(String(100), nullable=False)
+
+    # Klucz obcy do typy_czesci
+    typ_czesci = Column(Integer, ForeignKey("typy_czesci.id_typu"), nullable=False)
+
+    producent = Column(String(100))
+    numer_katalogowy = Column(String(100))
+    cena_katalogowa = Column(Numeric(10, 2))
     ilosc_dostepna = Column(Integer, default=0)
 
     wykorzystane = relationship("PartsUsed", back_populates="czesc")

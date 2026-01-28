@@ -1,6 +1,9 @@
-import bcrypt
 from typing import Optional
 from sqlalchemy.orm import Session
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash,
+)
 from backend.models.user import User
 from backend.models.role import Role
 
@@ -9,13 +12,12 @@ class AuthService:
 
     @staticmethod
     def hash_password(password: str) -> str:
-        salt = bcrypt.gensalt()
-        hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
-        return hashed.decode("utf-8")
+        return generate_password_hash(password)
 
     @staticmethod
     def verify_password(password: str, hashed: str) -> bool:
-        return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+        # W check_password_hash kolejnosc to (hash, haslo_jawne)
+        return check_password_hash(hashed, password)
 
     @staticmethod
     def create_user(
