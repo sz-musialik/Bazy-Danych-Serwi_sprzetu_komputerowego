@@ -1,32 +1,31 @@
-# Serwis sprzętu komputerowego - backend
+# Serwis - backend
 
-## Instrukcja uruchomienia i testów lokalnych.
+## Wymagania
+- Python 3.11
+- MySQL
 
-### Wymagania:
-- Python 3.11 wraz z bibliotekami zdefiniowanymi w pliku `requirements.txt`,
-- MySQL.
-
-### Instalacja:
-
+## Instalacja
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-### Konfiguracja:
-Należy zaktualizować `backend/database.py` aby wskazywał na bazę MySQL (DATABASE_URL).
+W przypadku, gdyby baza danych nie zawierała żadnych użytkowników, na których konta można by się zalogować, zostały utworzone pliki `create_admin.py`, `create_employee.py` i `create_manager.py`, które utworzą konta użytkowników o przykładowych danych logowania.
 
-### Uruchomienie projektu:
+## Konfiguracja bazy danych
+Plik `backend/database.py` należy zaktualizować, aby wskazywał na wykorzystywaną bazę MySQL (`DATABASE_URL`).
 
-1. Uruchomienie środowiska wirutalnego (venv).
-2. Uruchomienie serwera MySQL.
-3. Wywołanie pliku `debug_tables.py`.
-4. Wywołanie pliku `app.py`.
+## Uruchomienie projektu
+### Uruchomienie backendu
+```bash
+.\.venv\Scripts\Activate
+python -m backend.debug_tables
+python -m backend.app
+```
 
-### Testy:
-W celu uruchomienia podstawowych testów należy wywołać:
-
-```powershell
-pytest -q
+### Uruchomienie frontendu
+```bash
+.\.venv\Scripts\Activate
+python -m frontend.main
 ```
